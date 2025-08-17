@@ -251,8 +251,17 @@ for k in range(200):
 # a good loss, based on stats from counting would be ~2.45
     W.data += -50 * W.grad
 
-
-
+# REGULARIZATION ------------------------------------->>
+# starting at 1:52
+# gradient based frameworks have an equivalent to smoothing
+# if all weights are initialized to 0: `W = torch.zeros((27, 27))`
+# then all logits will become 0: `xenc @ W = [tensor of zeros]`
+# counts will then all be 1: `math.e**0 = 1`
+# probabilities will then be uniform: `counts / counts.sum(1, keepdims=True) = [tensor of 1s]`
+# therefore: trying to incentivize W to be near 0 produces a more uniform distribution (smoothing)
+# Regularization augments the loss function to incentivize it to push weights towards 0
+# e.g.: loss = -probs[torch.arange(num), ys].log().mean() + 0.01*(W**2).mean()
+# the loss function above is saying that if Ws are non-zero there's an additional loss (note that 0**2 = 0)
 
 # analyze the results
 # print("\n\n")
