@@ -52,10 +52,11 @@ lrs = 10**lre  # spaced exponentially in the range (0, 1)
 lri = []
 lossi = []
 
-for i in range(10000):
+for i in range(20000):
     # construct minibatch
     ix = torch.randint(0, X.shape[0], (32,))  # does this need a generator, or is the idea to get a different batch each time (probably!)
     # only grab the minibatch rows
+    # this is going to select 32 random rows from X, then index into C with those rows
     emb = C[X][ix]  # ([32, 3, 2])  # a tensor of 2D embeddings for each X index
     h = torch.tanh(emb.view(-1, 6) @ W1 + b1)  # -1 causes pytorch to infer the size from the 6
     logits = h @ W2 + b2  # ([32, 27])
@@ -85,7 +86,7 @@ for i in range(10000):
     # commented out after settling on a learning rate
     # lri.append(lre[i])  # plotting the learning rate exponent instead of lr to make it easier to view the graph?
     # lossi.append(loss.item())
-print(f"minibatch loss: {loss.item()}")
+    # print(f"minibatch loss: {loss.item()}")  # probaby don't print them all out
 
 # plot learning rate/loss
 # plt.plot(lri, lossi)
