@@ -1,25 +1,3 @@
-import torch
-import torch.nn.functional as F
-import matplotlib.pyplot as plt
-
-# NOTE: this is following the Neural Probabilistic Language Model paper
-# a diagram of the model is found on page 6 of that paper
-
-words = open("./names.txt", "r").read().splitlines()
-# print(len(words))
-# 32022  # lots of words, so I'll avoid printing them all
-
-# build the vocabulary of characters and to/from mappings
-chars = sorted(list(set("".join(words))))
-stoi = {s:i+1 for i,s in enumerate(chars)}
-stoi["."] = 0
-itos = {i:s for s,i in stoi.items()}
-
-# build the dataset ~9:50
-
-block_size = 3  # context length (number of preceeding characters)
-X, Y = [], []
-for w in words[:5]:
     print(w)
     context = [0] * block_size  # [0, 0, 0]
     for ch in w + ".":
