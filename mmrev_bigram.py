@@ -79,6 +79,9 @@ first_row = N[
 
 
 g = torch.Generator().manual_seed(2147483647)
+# N is a matrix of stats (how often did the second bigram element follow the first)
+# the stats are converted to probabilities (P); probabilites are a list of numbers in the range
+# (0, 1) that sum to 1.
 P = N.float()
 P /= P.sum(
     1, keepdim=True

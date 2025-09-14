@@ -30,9 +30,11 @@ andrej_karpathy_makemore_wavenet.md
 claude_building_a_wavenet_help.md
 andrej_karpathy_bigram_language_model.md
 andrej_karpathy_broadcasting.md
+andrej_karpathy_mlp_review.md
 
 ## video review code
 
 - karpathy_micrograd.ipynb (Jupyter Notebook for micrograd video)
 - mmrev_bigram.py (first half of first "building makemore" video (up to 1:01))
 - mmrev_bigram_stat_two.py (second half of first "building makemore" video (starting at 1:01))
+- mmrev_bigram_nn_one.py (building makemore: 1:04->)

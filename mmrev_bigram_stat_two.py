@@ -1,3 +1,4 @@
+# continuing from `mmrev_bigram.py`
 # the simplist bigram language model implementation is to just count
 # how often each pair occurs in the dataset
 
@@ -32,18 +33,24 @@ for w in words:
         N[ix1, ix2] += 1
 
 g = torch.Generator().manual_seed(2147483647)
-P = N.float()
+
+# convert the numeric counts (N) to probabilities (P); probabilites are a series of numbers in the range (0, 1) that sum to 1
+P = (N + 1).float()  # model smoothing; add 1 to every count
 P /= P.sum(
     1, keepdim=True
-)  # `/=` is an "in-place" operation; more efficient than `P = P / P.sum(1, keepdim=True`
+)  # `/=` is an "in-place" operation; more efficient than `P = P / P.sum(1, keepdim=True)`
 # confirm that it's worked:
 # print(P[0].sum())  # tensor(1.)
 # print(P[1].sum())  # tensor(1.)
+
+# sampling for new names
 for i in range(5):
     out = []
     ix = 0  # start from the start (".") character
     while True:
-        p = P[int(ix)]
+        p = P[
+            int(ix)
+        ]  # the probability distribution for `ix` (the row that represents the first character)
         # p = (
         #     torch.ones(27) / 27.0
         # )  # to convince yourself the model is doing something, check the results with an even distribution
@@ -82,7 +89,7 @@ print(f"average nll: {nll / n}")
 
 log_likelihood = 0.0  # remember: log(a*b*c) = log(a) + log(b) + log(c)
 n = 0  # count of iterations for averaging loss
-for w in ["an"]:
+for w in ["annajq"]:
     chs = ["."] + list(w) + ["."]
     for ch1, ch2 in zip(chs, chs[1:]):
         ix1 = stoi[ch1]
