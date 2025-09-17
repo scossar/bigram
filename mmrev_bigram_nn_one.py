@@ -1,8 +1,7 @@
 # continuing from `mmrev_bigram_stat_two.py`; casting the bigram model into the neural network framework
-
 import torch
 import torch.nn.functional as F
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
 words = open("./names.txt", "r").read().splitlines()
 

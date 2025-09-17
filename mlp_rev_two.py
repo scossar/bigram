@@ -1,3 +1,4 @@
+# continued from mlp_rev.py
 # second pass through Karpathy's MLP video
 # notes: andrej_karpathy_mlp_review.md
 import torch
@@ -14,19 +15,17 @@ itos = {i: s for s, i in stoi.items()}
 # build the dataset
 block_size = 3  # context length
 X, Y = [], []
-for w in words[:5]:
-    print(w)  # the current word
+for w in words:
     context = [0] * block_size
     for ch in w + ".":
         ix = stoi[ch]
         X.append(context)
         Y.append(ix)  # the label is the current character
-        print("".join(itos[i] for i in context), "-->", itos[ix])  # context -> label
         context = context[1:] + [ix]  # creates a sliding context window
 
 X = torch.tensor(X)
 Y = torch.tensor(Y)
-# print(X.shape) # torch.Size([32, 3])
+print(X.shape)  # torch.Size([228146, 3])
 
 g = torch.Generator().manual_seed(2147483647)
 
@@ -45,13 +44,21 @@ print("num params:", num_params)
 for p in parameters:
     p.requires_grad = True
 
-loss = torch.tensor(0.0)
-for _ in range(1000):
+lre = torch.linspace(
+    -3, 0, 1000
+)  # lre means learning rate exponent; we want 1000 steps between -3 and 0
+lrs = 10**lre  # step linearly between the exponents of the learning rates (1e-3, 1)
+
+lri = []  # track learning rate used for each iteration i
+lossi = []  # track loss for each iteration i
+
+for i in range(1000):
     # embedding layer
     # ###############
+    ix = torch.randint(0, X.shape[0], (32,))  # batch_size = B = 32
 
-    emb = C[X]  # the embeddings for the training examples
-    # print(emb.shape)  # torch.Size([32, 3, 2]) (B,T,C)
+    emb = C[X[ix]]  # the embeddings for the training examples
+    # print(emb.shape)  # torch.Size([B, 3, 2]) (B,T,C) B = batch_size
 
     # hidden layer
     # ############
@@ -59,18 +66,19 @@ for _ in range(1000):
     # the number of inputs to the layer is T*C (block_size*n_embd)
     # the number of outputs is a hyperparameter; hardcoded to 100 for now
 
-    # note: for the current implementation, emb has the shape (32, 3, 2)
-    # the following matrix multiplication can't be done `emb @ W1 + b` (32, 3, 2) @ (6, 100)
+    # note: for the current implementation, emb has the shape (B, 3, 2)
+    # the following matrix multiplication can't be done `emb @ W1 + b` (B, 3, 2) @ (6, 100)
     h = torch.tanh(
         emb.view(-1, 6) @ W1 + b1
     )  # calling the view method to reshape emb; tanh squashes results between (-1, 1)
-    # print(h.shape)  # torch.Size([32, 100])
+    # print(h.shape)  # torch.Size([B, 100])
 
     # output layer (is this technically the output layer?)
     # ############
     # see notes cross-entropy loss section
     logits = h @ W2 + b2
-    loss = F.cross_entropy(logits, Y)
+    loss = F.cross_entropy(logits, Y[ix])  # index into Y with minibatch
+    print(loss.item())
 
     # backward pass
     # #############
@@ -78,25 +86,23 @@ for _ in range(1000):
         p.grad = None
     loss.backward()
     # update
+    lr = lrs[i]
     for p in parameters:
-        p.data += -0.1 * p.grad  # type: ignore  (ignore Pyright warning about grad having type "None")
+        p.data += -lr * p.grad  # type: ignore  (ignore Pyright warning about grad having type "None")
 
-print(loss.item())
+    # track learning rate stats
+    lri.append(
+        lre[i]
+    )  # track the exponent; the plot's easier to read than using lri.append(lr)
+    lossi.append(loss.item())
 
-# look at the max of logits along the first dimension compared to the Y labels
-# note that max returns both the max values along the dimension and the indices of the max values
-# comparing this to the Y labels, we're getting good (overfit) results, except for the cases of the (...) contexts
-# the problem is here: ... --> e; ... --> o; ... --> a
-# so we'll never get to a loss of ~0.0
-# print(logits.max(1))
-# print(Y)
-# torch.return_types.max(
-# values=tensor([13.3348, 17.7905, 20.6013, 20.6120, 16.7355, 13.3348, 15.9984, 14.1723,
-#         15.9147, 18.3614, 15.9396, 20.9265, 13.3348, 17.1089, 17.1319, 20.0601,
-#         13.3348, 16.5891, 15.1017, 17.0581, 18.5862, 15.9670, 10.8740, 10.6871,
-#         15.5056, 13.3348, 16.1794, 16.9743, 12.7427, 16.2008, 19.0846, 16.0195],
-#        grad_fn=<MaxBackward0>),
-# indices=tensor([19, 13, 13,  1,  0, 19, 12,  9, 22,  9,  1,  0, 19, 22,  1,  0, 19, 19,
-#          1,  2,  5, 12, 12,  1,  0, 19, 15, 16,  8,  9,  1,  0]))
-# tensor([ 5, 13, 13,  1,  0, 15, 12,  9, 22,  9,  1,  0,  1, 22,  1,  0,  9, 19,
-#          1,  2,  5, 12, 12,  1,  0, 19, 15, 16,  8,  9,  1,  0])
+# plot learning rate, loss
+plt.plot(lri, lossi)
+plt.show()
+
+# loss for full training set
+emb = C[X]
+h = torch.tanh(emb.view(-1, 6) @ W1 + b1)
+logits = h @ W2 + b2
+loss = F.cross_entropy(logits, Y)
+print("loss for all of X", loss.item())
