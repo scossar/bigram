@@ -31,6 +31,7 @@ claude_building_a_wavenet_help.md
 andrej_karpathy_bigram_language_model.md
 andrej_karpathy_broadcasting.md
 andrej_karpathy_mlp_review.md
+andrej_karpathy_makemore_backprop_review.md **
 scatter_plot_for_high_dimensional_matrix.md
 
 ## video review code
